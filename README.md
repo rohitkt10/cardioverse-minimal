@@ -1,4 +1,4 @@
-# cardioverse-minimal
+# CARDIOVERSE minimal
 
 Preliminary GNN models and interpretability methods explored as part of the CARDIOVERSE project — an ARPA-H-funded effort. 
 

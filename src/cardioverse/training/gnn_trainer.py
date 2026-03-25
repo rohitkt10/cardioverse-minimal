@@ -8,13 +8,11 @@ from sklearn.metrics import balanced_accuracy_score, f1_score, roc_auc_score
 
 from cardioverse.utils.regularization import lp_regularizer
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 
 class GNNTrainer:
     """Unified trainer for GCNModel and LiNetModel."""
 
-    def __init__(self, model, optimizer, edge_index, lossfn=F.nll_loss, device=DEVICE):
+    def __init__(self, model, optimizer, edge_index, lossfn=F.nll_loss, device='cuda' if torch.cuda.is_available() else 'cpu'):
         self.model = model.to(device)
         self.optimizer = optimizer
         self.lossfn = lossfn
@@ -179,12 +177,11 @@ class GNNTrainer:
                      for i in range(len(x))]
         graph_batch = tg.data.Batch.from_data_list(data_list).to(self.device)
 
-        with torch.no_grad():
-            output = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
+        output = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
 
-            if isinstance(output, tuple):
-                y_logits, _ = output
-            else:
-                y_logits = output
+        if isinstance(output, tuple):
+            y_logits, _ = output
+        else:
+            y_logits = output
 
         return y_logits

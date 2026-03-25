@@ -10,7 +10,7 @@ import torch_geometric as tg
 import numpy as np
 from sklearn.metrics import balanced_accuracy_score, f1_score, roc_auc_score
 
-from cardioverse.training.gnn_trainer import GNNTrainer, DEVICE
+from cardioverse.training.gnn_trainer import GNNTrainer
 from cardioverse.utils.regularization import lp_regularizer
 
 
@@ -22,7 +22,7 @@ class GNNFusionTrainer(GNNTrainer):
     Stage 2: Unfreeze all, train end-to-end
     """
 
-    def __init__(self, model, optimizer, edge_indices: List, lossfn=F.nll_loss, device=DEVICE):
+    def __init__(self, model, optimizer, edge_indices: List, lossfn=F.nll_loss, device='cuda' if torch.cuda.is_available() else 'cpu'):
         """
         Args:
             model: GNNIntegrativeModel with pretrained GNNs
@@ -147,8 +147,8 @@ class GNNFusionTrainer(GNNTrainer):
             graph_batch = tg.data.Batch.from_data_list(data_list).to(self.device)
             graphs.append(graph_batch)
 
-        with torch.no_grad():
-            logits, _ = self.model(graphs)
+        
+        logits, _ = self.model(graphs)  
         return logits
 
     def fit(self, train_dataset, val_dataset, config):

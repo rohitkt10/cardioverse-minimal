@@ -28,7 +28,11 @@ uv sync --all-extras
 
 `--all-extras` installs optional dependencies (Jupyter) needed to run the notebooks.
 
-**3. Run the notebooks:**
+**3. Place the data in `data/`**
+
+Refer to [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for expected structure of data placement. 
+
+**4. Run the notebooks:**
 
 ```bash
 uv run jupyter lab

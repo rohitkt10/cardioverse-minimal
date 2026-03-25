@@ -10,10 +10,10 @@ This document defines the fixed architecture and usage patterns for cardioverse-
 cardioverse-minimal/
 ├── data/
 │   ├── gene_level_data/
-│   │   ├── X.npy               # (n_samples, 916) Gene expression features
+│   │   ├── X.csv               # (n_samples, 916) Gene expression features
 │   │   └── edge_index.npy      # (2, n_edges) Gene network edges
 │   ├── reaction_level_data/
-│   │   ├── X.npy               # (n_samples, 3572) Reaction features
+│   │   ├── X.csv               # (n_samples, 3572) Reaction features
 │   │   └── edge_index.npy      # (2, n_edges) Reaction network edges
 │   └── metadata/
 │       └── drug_metadata.csv   # Drug name, cardiotoxicity label
@@ -41,8 +41,8 @@ cardioverse-minimal/
 │       └── regularization.py   # lp_regularizer
 │
 └── notebooks/
-    ├── 01_single_modality_genes.ipynb
-    ├── 02_single_modality_reactions.ipynb
+    ├── 01_single_modality_reactions.ipynb
+    ├── 02_single_modality_genes.ipynb
     └── 03_multiview_fusion.ipynb
 ```
 
@@ -81,6 +81,7 @@ class TrainingConfig:
     lmbda_kl: float = 50.0
     logstep: int = 50
     edge_dropout: float = 0.0
+    checkpoint_after: int = 20
 ```
 
 ### Multiview Configs (`configs/fusion_config.py`)
@@ -362,35 +363,13 @@ history = trainer.fit(train_dataset_mv, val_dataset_mv, fusion_train_config)
 
 ---
 
-## Explanations
-
-### IGExplainer (`explanations/integrated_gradients.py`)
-
-Integrated Gradients attribution for GNN models.
-
-```python
-class IGExplainer:
-    def __init__(self, model, edge_index: Tensor, baseline: float = 0.0):
-        ...
-
-    def explain(self, dataset, target: int = 1, feature_names: List[str] = None) -> pd.DataFrame:
-        """
-        Compute integrated gradients.
-
-        Returns:
-            DataFrame with samples as rows, features as columns
-        """
-```
-
----
-
 ## Training Workflows
 
 ### Single-Modality Workflow (Genes OR Reactions)
 
 ```python
 # 1. Load data
-X = np.load("data/gene_level_data/X.npy")  # (n_samples, n_features)
+X = pd.read_csv("data/gene_level_data/X.csv", index_col=0)  # (n_samples, n_features)
 edge_index = np.load("data/gene_level_data/edge_index.npy")
 y = ...  # labels
 

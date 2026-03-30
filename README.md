@@ -19,7 +19,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 **2. Clone and initialize:**
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/rohitkt10/cardioverse-minimal.git
 cd cardioverse-minimal
 uv init --python 3.12
 uv sync

@@ -64,6 +64,7 @@ class LiNetModel(nn.Module):
 
     def __init__(self, config):
         super().__init__()
+        self.config = config
         assert hasattr(config, "num_nodes"), "LiNet model requires fixed number of nodes"
 
         # Position embedding

@@ -70,7 +70,6 @@ ENV/
 *.pickle
 *.joblib
 *.onnx
-*.pt
 *.pth
 *.bin
 data/

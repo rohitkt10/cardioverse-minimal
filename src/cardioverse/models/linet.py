@@ -95,7 +95,7 @@ class LiNetModel(nn.Module):
             out_channels=config.hidden_dim * 2,
             tau=1.0,
             heads=2,
-            num_clusters=config.num_clusters
+            s=config.nnum_clusterum_clusters
         )
         self.fc1 = nn.Linear(self.mempool.out_channels * self.mempool.num_clusters, config.hidden_dim)
         self.global_residual = nn.Linear(config.num_nodes, config.hidden_dim)

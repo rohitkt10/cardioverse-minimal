@@ -15,7 +15,6 @@ class GNNModelConfig:
         num_labels: Number of output classes. Default: 2.
         num_nodes: Number of nodes in the graph (LiNetModel only). Default: None.
         pos_emb_size: Size of positional embedding (LiNetModel only). Default: 4.
-        num_clusters: Number of clusters for memory pooling (LiNetModel only). Default: 20.
         pool_ratio: Pooling ratio for TopK pooling (LiNetModel only). Default: 0.5.
     """
     in_features: int = 1
@@ -28,7 +27,6 @@ class GNNModelConfig:
     # LiNet-specific (ignored by GCNModel)
     num_nodes: int = None
     pos_emb_size: int = 4
-    num_clusters: int = 20
     pool_ratio: float = 0.5
 
     def update(self, **kwargs):
@@ -55,7 +53,6 @@ class TrainingConfig:
         lr: Learning rate. Default: 5e-5.
         lmbda_l1: L1 regularization coefficient. Default: 1e-3.
         lmbda_l2: L2 regularization coefficient. Default: 1e-3.
-        lmbda_kl: KL divergence regularization coefficient (LiNetModel only). Default: 50.0.
         logstep: Log training metrics every N epochs. Default: 50.
         edge_dropout: Edge dropout probability (GCNModel only). Default: 0.0.
         checkpoint_after: Start checkpointing best model after this epoch. Default: 20.
@@ -65,7 +62,6 @@ class TrainingConfig:
     lr: float = 5e-5
     lmbda_l1: float = 1e-3
     lmbda_l2: float = 1e-3
-    lmbda_kl: float = 50.0
     logstep: int = 50
     edge_dropout: float = 0.0
     checkpoint_after: int = 20

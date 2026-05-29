@@ -72,8 +72,7 @@ class GNNFusionTrainer(GNNTrainer):
             graphs.append(graph_batch)
 
         self.optimizer.zero_grad()
-        y_logits, kl_losses = self.model(graphs)
-        loss_kl = torch.stack(kl_losses).sum()
+        y_logits = self.model(graphs)
 
         data_loss = (
             self.lossfn(F.log_softmax(y_logits, dim=1), y, weight=weights)
@@ -82,7 +81,7 @@ class GNNFusionTrainer(GNNTrainer):
         )
         l1_reg = config.lmbda_l1 * lp_regularizer(self.model, p=1)
         l2_reg = config.lmbda_l2 * lp_regularizer(self.model, p=2)
-        total_loss = data_loss + l1_reg + l2_reg + config.lmbda_kl * loss_kl
+        total_loss = data_loss + l1_reg + l2_reg
 
         total_loss.backward()
         self.optimizer.step()
@@ -115,7 +114,7 @@ class GNNFusionTrainer(GNNTrainer):
             graphs.append(graph_batch)
 
         with torch.no_grad():
-            y_logits, _ = self.model(graphs)
+            y_logits = self.model(graphs)
             data_loss = self.lossfn(F.log_softmax(y_logits, dim=1), y)
 
         loss = data_loss.detach().cpu().item()
@@ -147,8 +146,7 @@ class GNNFusionTrainer(GNNTrainer):
             graph_batch = tg.data.Batch.from_data_list(data_list).to(self.device)
             graphs.append(graph_batch)
 
-        
-        logits, _ = self.model(graphs)  
+        logits = self.model(graphs)
         return logits
 
     def fit(self, train_dataset, val_dataset, config):

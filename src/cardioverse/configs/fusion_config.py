@@ -49,7 +49,6 @@ class FusionTrainingConfig:
         lr_stage2: Learning rate for stage 2. Default: 1e-5.
         lmbda_l1: L1 regularization coefficient. Default: 1e-3.
         lmbda_l2: L2 regularization coefficient. Default: 1e-3.
-        lmbda_kl: KL divergence regularization coefficient. Default: 50.0.
         logstep: Log training metrics every N epochs. Default: 50.
     """
     batch_size: int = 64
@@ -59,7 +58,6 @@ class FusionTrainingConfig:
     lr_stage2: float = 1e-5
     lmbda_l1: float = 1e-3
     lmbda_l2: float = 1e-3
-    lmbda_kl: float = 50.0
     logstep: int = 50
 
     def update(self, **kwargs):

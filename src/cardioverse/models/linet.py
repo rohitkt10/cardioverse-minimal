@@ -60,7 +60,7 @@ class GNNBlock(nn.Module):
 
 
 class LiNetModel(nn.Module):
-    """Position-aware GNN with memory pooling."""
+    """Position-aware GNN with global mean pooling."""
 
     def __init__(self, config):
         super().__init__()
@@ -89,15 +89,6 @@ class LiNetModel(nn.Module):
             conv_blocks.append(conv_block)
         self.conv_blocks = nn.ModuleList(conv_blocks)
 
-        # Memory pooling
-        self.mempool = gnn.MemPooling(
-            in_channels=config.hidden_dim,
-            out_channels=config.hidden_dim * 2,
-            tau=1.0,
-            heads=2,
-            s=config.nnum_clusterum_clusters
-        )
-        self.fc1 = nn.Linear(self.mempool.out_channels * self.mempool.num_clusters, config.hidden_dim)
         self.global_residual = nn.Linear(config.num_nodes, config.hidden_dim)
 
         # Classifier
@@ -108,7 +99,7 @@ class LiNetModel(nn.Module):
         )
 
     def embedding(self, x, edge_index, batch, **kwargs):
-        """Return (graph_embedding, kl_loss)."""
+        """Return graph-level embedding."""
         batch_size = len(np.unique(batch.cpu()))
         x_input = x.view(batch_size, -1)
         in_features = x.shape[0] // batch_size
@@ -122,20 +113,16 @@ class LiNetModel(nn.Module):
         for conv_block in self.conv_blocks:
             x, edge_index, batch, pos = conv_block(x, edge_index, batch, pos)
 
-        # Memory pooling
-        x, score = self.mempool(x, batch)
-        x = x.view(x.shape[0], -1)
-        loss_kl = self.mempool.kl_loss(score)
+        # Global pooling
+        x = gnn.global_mean_pool(x, batch)
 
-        # Final embedding
-        x = self.fc1(x)
         z = self.global_residual(x_input)
         x = x + z
 
-        return x, loss_kl
+        return x
 
     def forward(self, x, edge_index, batch, **kwargs):
-        """Return (logits, kl_loss)."""
-        x, loss_kl = self.embedding(x, edge_index, batch, **kwargs)
+        """Return logits."""
+        x = self.embedding(x, edge_index, batch, **kwargs)
         x = self.clf(x)
-        return x, loss_kl
+        return x

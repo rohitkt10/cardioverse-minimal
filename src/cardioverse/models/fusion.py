@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 import torch
 import torch.nn as nn
@@ -67,7 +67,7 @@ class GNNIntegrativeModel(nn.Module):
         self.models = nn.ModuleList(models)
         self.transformer = ModalityFusionTransformer(model_config)
 
-    def get_embeddings(self, graphs: List) -> Tuple[Tensor, List[Tensor]]:
+    def get_embeddings(self, graphs: List) -> Tensor:
         """
         Get embeddings from all GNNs.
 
@@ -75,23 +75,18 @@ class GNNIntegrativeModel(nn.Module):
             graphs: List of torch_geometric.data.Batch objects (one per modality)
 
         Returns:
-            (stacked_embeddings, kl_losses)
             stacked_embeddings: (B, M, hidden_dim)
-            kl_losses: List of per-modality KL losses
         """
         embeddings = []
-        kl_losses = []
         for graph, model in zip(graphs, self.models):
             args = (graph.x, graph.edge_index,)
             if hasattr(graph, "batch"):
                 args = args + (graph.batch,)
-            embedding, kl_loss = model.embedding(*args)
+            embedding = model.embedding(*args)
             embeddings.append(embedding)
-            kl_losses.append(kl_loss)
-        embeddings = torch.stack(embeddings, dim=1)
-        return embeddings, kl_losses
+        return torch.stack(embeddings, dim=1)
 
-    def forward(self, graphs: List) -> Tuple[Tensor, List[Tensor]]:
+    def forward(self, graphs: List) -> Tensor:
         """
         Forward pass for multiview classification.
 
@@ -99,8 +94,7 @@ class GNNIntegrativeModel(nn.Module):
             graphs: List of torch_geometric.data.Batch objects (one per modality)
 
         Returns:
-            (logits, kl_losses)
+            logits
         """
-        embeddings, kl_losses = self.get_embeddings(graphs)
-        logits = self.transformer(embeddings)
-        return logits, kl_losses
+        embeddings = self.get_embeddings(graphs)
+        return self.transformer(embeddings)

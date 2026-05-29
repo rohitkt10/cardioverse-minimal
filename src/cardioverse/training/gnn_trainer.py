@@ -34,25 +34,13 @@ class GNNTrainer:
 
         self.optimizer.zero_grad()
 
-        # Forward pass - handle both output types
-        output = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
+        y_logits = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
 
-        if isinstance(output, tuple):
-            y_logits, kl_loss = output
-            has_kl = True
-        else:
-            y_logits = output
-            has_kl = False
-
-        # Compute loss
         data_loss = self.lossfn(F.log_softmax(y_logits, dim=1), y, weight=weights) if weights is not None \
                     else self.lossfn(F.log_softmax(y_logits, dim=1), y)
         l1_reg = config.lmbda_l1 * lp_regularizer(self.model, p=1)
         l2_reg = config.lmbda_l2 * lp_regularizer(self.model, p=2)
-
         total_loss = data_loss + l1_reg + l2_reg
-        if has_kl:
-            total_loss += config.lmbda_kl * kl_loss
 
         total_loss.backward()
         self.optimizer.step()
@@ -91,13 +79,7 @@ class GNNTrainer:
         graph_batch = tg.data.Batch.from_data_list(data_list).to(self.device)
 
         with torch.no_grad():
-            output = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
-
-            if isinstance(output, tuple):
-                y_logits, _ = output
-            else:
-                y_logits = output
-
+            y_logits = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
             data_loss = self.lossfn(F.log_softmax(y_logits, dim=1), y)
 
         loss = data_loss.detach().cpu().item()
@@ -177,11 +159,4 @@ class GNNTrainer:
                      for i in range(len(x))]
         graph_batch = tg.data.Batch.from_data_list(data_list).to(self.device)
 
-        output = self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
-
-        if isinstance(output, tuple):
-            y_logits, _ = output
-        else:
-            y_logits = output
-
-        return y_logits
+        return self.model(graph_batch.x, edge_index=graph_batch.edge_index, batch=graph_batch.batch)
